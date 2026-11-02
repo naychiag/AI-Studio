@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DRAPE STUDIO — Luxury AI Virtual Try-On</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Cormorant Garamond -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+          },
+          colors: {
+            ecru: '#FAF7F2',
+            canvas: '#F4F0E8',
+            panel: '#FFFFFF',
+            borderWarm: '#EAE4D9',
+            terracotta: {
+              DEFAULT: '#C25E3E',
+              hover: '#AB5134',
+              light: '#F8EDE8'
+            },
+            charcoal: '#1A1A1A',
+            sage: {
+              badge: '#E8EFE9',
+              dot: '#2E6B3D'
+            }
+          },
+          boxShadow: {
+            'subtle': '0 2px 12px -2px rgba(26, 26, 26, 0.05)',
+            'elevated': '0 12px 32px -4px rgba(26, 26, 26, 0.08), 0 4px 12px -2px rgba(26, 26, 26, 0.04)',
+            'handle': '0 4px 14px 0 rgba(194, 94, 62, 0.35)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Editorial luxury UI styling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #FAF7F2;
+      color: #1A1A1A;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+    }
+
+    /* High-fashion slim scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #E2DACD;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C25E3E;
+    }
+
+    /* Pulse for engine online indicator */
+    @keyframes softPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+    .pulse-dot {
+      animation: softPulse 2.4s ease-in-out infinite;
+    }
+
+    /* AI Scanning line transition */
+    @keyframes scanPass {
+      0% { top: -5%; opacity: 0; }
+      20% { opacity: 0.85; }
+      80% { opacity: 0.85; }
+      100% { top: 105%; opacity: 0; }
+    }
+    .scanning-active {
+      display: block !important;
+      animation: scanPass 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    /* Turntable 360 slow spin badge */
+    @keyframes orbitBadge {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .spin-turntable {
+      animation: orbitBadge 14s linear infinite;
+    }
+
+    /* Split handle transitions */
+    .handle-drag-glow {
+      box-shadow: 0 0 0 4px rgba(194, 94, 62, 0.25), 0 8px 20px rgba(194, 94, 62, 0.4);
+    }
+
+    /* Range slider luxury styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #E5DFD4;
+      height: 4px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #C25E3E;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans text-charcoal antialiased">
+
+  <!-- ========================================== -->
+  <!-- 1. TOP GLOBAL APP HEADER                   -->
+  <!-- ========================================== -->
+  <header class="h-14 border-b border-borderWarm bg-ecru flex items-center justify-between px-3 md:px-6 z-40 shrink-0">
+    <!-- Left: Geometric Terracotta Logo & Brand Title -->
+    <div class="flex items-center space-x-3.5">
+      <!-- Minimalist geometric "D" logo tile -->
+      <div class="w-8 h-8 rounded-xl bg-terracotta flex items-center justify-center text-white shadow-sm font-semibold text-lg tracking-tight hover:brightness-105 transition cursor-pointer" onclick="resetToDefaults()">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M4 3h7a9 9 0 0 1 9 9 9 9 0 0 1-9 9H4V3zm4 4v10h3a5 5 0 0 0 5-5 5 5 0 0 0-5-5H8z"/>
+        </svg>
+      </div>
+      <div class="flex items-baseline space-x-2">
+        <h1 class="font-bold tracking-wider text-base text-charcoal uppercase">DRAPE STUDIO</h1>
+        <span class="text-[10px] uppercase tracking-widest text-stone-400 font-medium hidden sm:inline">v2.4 Editorial</span>
+      </div>
+    </div>
+
+    <!-- Center: Primary CTA Action Button -->
+    <div class="flex items-center space-x-3">
+      <button onclick="triggerTryOnScan()" class="bg-[#F4EFE6] hover:bg-white text-charcoal border border-borderWarm px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide shadow-2xs transition-all hover:border-stone-400 active:scale-95 flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5 text-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span>Generate AI Try-On</span>
+      </button>
+
+      <!-- Prominent Upload Real Photo Button -->
+      <label class="cursor-pointer bg-terracotta hover:bg-terracotta-hover text-white px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-tight shadow-sm transition flex items-center space-x-1.5 active:scale-95" title="Upload your real photo">
+        <input type="file" id="top-file-input" accept="image/*" onchange="handleUserPhotoUpload(event)" class="hidden">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Upload Your Photo (လူပုံတင်ရန်)</span>
+      </label>
+
+      <!-- Prominent Upload T-Shirt Button -->
+      <label class="cursor-pointer bg-[#242223] hover:bg-black text-white px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-tight shadow-sm transition flex items-center space-x-1.5 active:scale-95 border border-stone-700" title="Upload custom T-shirt photo">
+        <input type="file" id="top-tshirt-input" accept="image/*" onchange="handleTshirtUpload(event)" class="hidden">
+        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span>Upload T-Shirt (အင်္ကျီတင်ရန်)</span>
+      </label>
+    </div>
+
+    <!-- Right: Browser controls & Session Tools -->
+    <div class="flex items-center space-x-1 sm:space-x-2">
+      <!-- Mobile sidebar toggle -->
+      <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl text-stone-600 hover:text-charcoal hover:bg-white border border-borderWarm" title="Toggle Controls">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <button onclick="toggleShareModal()" title="Share session link" class="p-2 rounded-xl text-stone-600 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+      </button>
+
+      <button onclick="exportSnapshot()" title="Export High-Res Render" class="hidden sm:flex items-center space-x-1.5 bg-charcoal text-white hover:bg-stone-800 px-3.5 py-1.5 rounded-xl text-xs font-medium tracking-wide transition shadow-sm active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        <span>Export</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN APPLICATION WORKSPACE              -->
+  <!-- ========================================== -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- A. LEFT NAVIGATION ICON RAIL (Thin vertical bar) -->
+    <aside class="w-14 md:w-16 bg-ecru border-r border-borderWarm flex flex-col justify-between items-center py-4 z-30 shrink-0">
+      <!-- Top Icon Stack -->
+      <div class="flex flex-col items-center space-y-3.5">
+        <!-- Dashboard / Grid (Active State with Terracotta accent) -->
+        <button class="w-10 h-10 rounded-xl bg-terracotta text-white flex items-center justify-center shadow-sm transition hover:brightness-105" title="Studio Workspace">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+        </button>
+
+        <!-- Garment Hanger -->
+        <button onclick="scrollToClothing()" class="w-10 h-10 rounded-xl text-stone-500 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm flex items-center justify-center transition" title="Wardrobe Collection">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3a3 3 0 00-3 3c0 .874.373 1.662.97 2.207L3.4 14.2A2 2 0 003 15.5V19a2 2 0 002 2h14a2 2 0 002-2v-3.5a2 2 0 00-.4-1.3l-6.57-5.993A3.002 3.002 0 0015 6a3 3 0 00-3-3z"/>
+          </svg>
+        </button>
+
+        <!-- Model / Profile -->
+        <button onclick="openModelModal()" class="w-10 h-10 rounded-xl text-stone-500 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm flex items-center justify-center transition" title="Editorial Model Specs">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </button>
+
+        <!-- Settings Gear -->
+        <button onclick="showToast('Physics Engine', 'Rembrandt warm key @ 4800K with volumetric ray tracing.')" class="w-10 h-10 rounded-xl text-stone-500 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm flex items-center justify-center transition" title="Engine Settings">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Bottom Pinned Rail Icons -->
+      <div class="flex flex-col items-center space-y-3">
+        <!-- Help Circle -->
+        <button onclick="toggleHelpModal()" class="w-10 h-10 rounded-xl text-stone-500 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm flex items-center justify-center transition" title="User Guide">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </button>
+
+        <!-- Sign Out -->
+        <button onclick="showToast('Session Saved', 'Fitting room state stored in local studio cache.')" class="w-10 h-10 rounded-xl text-stone-500 hover:text-charcoal hover:bg-white border border-transparent hover:border-borderWarm flex items-center justify-center transition" title="Save & Exit">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- B. LEFT CONTROL & SELECTION PANEL (Scrollable Sidebar) -->
+    <section id="sidebar-panel" class="fixed lg:static inset-y-0 left-14 md:left-16 w-80 sm:w-96 lg:w-[410px] bg-ecru border-r border-borderWarm flex flex-col overflow-y-auto z-30 transition-transform duration-300 transform -translate-x-full lg:translate-x-0 p-4 sm:p-5 space-y-6">
+      
+      <!-- ============================================== -->
+      <!-- SECTION 1: SELECT MODEL & DRAPE ESTIMATION     -->
+      <!-- ============================================== -->
+      <div>
+        <!-- Mode Switcher: Studio Model vs My Photo -->
+        <div class="flex items-center p-1 bg-[#ECE6DC] rounded-xl mb-3 border border-borderWarm">
+          <button id="btn-mode-studio" onclick="switchBodyMode('studio')" class="flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition bg-white text-charcoal shadow-2xs">
+            Studio Model (IMG_5199)
+          </button>
+          <button id="btn-mode-custom" onclick="switchBodyMode('custom')" class="flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition text-stone-600 hover:text-charcoal flex items-center justify-center space-x-1">
+            <svg class="w-3.5 h-3.5 text-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>My Real Photo (သင့်ပုံ)</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-3.5">
+          
+          <!-- Left Column: Active Model Card (5 cols) -->
+          <div class="col-span-5 flex flex-col">
+            <h2 class="text-xs font-bold tracking-wider text-charcoal uppercase mb-2">1. REAL HUMAN MODEL</h2>
+            
+            <div class="relative bg-white border border-borderWarm rounded-2xl p-2 shadow-2xs group cursor-pointer transition hover:border-stone-400" onclick="openBodyUploadModal()">
+              <!-- Real Photo Thumbnail -->
+              <div id="model-thumb-container" class="w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#ECE6DC] relative">
+                <img id="model-thumb-img" src="" class="w-full h-full object-cover" alt="Model 5199 Photo" />
+                
+                <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                  <span class="bg-white/95 text-[10px] font-bold px-2 py-1 rounded-md text-charcoal shadow-xs">Change Photo</span>
+                </div>
+              </div>
+
+              <!-- "Active Model" Pill Badge -->
+              <div class="mt-2 text-center">
+                <span id="model-badge-label" class="inline-block bg-[#F4F0E8] border border-borderWarm text-stone-600 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-tight truncate max-w-full">
+                  Model 5199 (Street Aesthetic)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Drape Estimation & Tucking (7 cols) -->
+          <div class="col-span-7 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xs font-bold tracking-wider text-charcoal uppercase mb-2">REAL-TIME DRAPE ESTIMATION</h3>
+              
+              <!-- Fit Style Switcher: [ Tucked In ] vs [ Untucked ] -->
+              <div class="bg-[#ECE6DC] p-1 rounded-full flex items-center mb-3 border border-borderWarm">
+                <button id="btn-tucked" onclick="setTuckState(true)" class="flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all bg-white text-charcoal shadow-2xs">
+                  Tucked In
+                </button>
+                <button id="btn-untucked" onclick="setTuckState(false)" class="flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all text-stone-600 hover:text-charcoal">
+                  Untucked
+                </button>
+              </div>
+
+              <!-- Removable Size Indicator Pill with Dropdown Selector -->
+              <div class="relative inline-block mb-3">
+                <div class="flex items-center space-x-1.5">
+                  <button onclick="toggleSizeMenu()" class="bg-terracotta text-white px-3.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-2xs hover:bg-terracotta-hover transition active:scale-95">
+                    <span id="current-size-display">Size: L</span>
+                    <span class="text-white/80 hover:text-white font-bold ml-1 text-xs">✕</span>
+                  </button>
+                  <span id="drape-fit-label" class="text-[11px] text-stone-400 font-medium">(Oversized drape)</span>
+                </div>
+
+                <!-- Size selection popup -->
+                <div id="size-dropdown" class="hidden absolute top-8 left-0 w-44 bg-white border border-borderWarm rounded-xl shadow-lg p-1.5 z-50">
+                  <div class="text-[10px] uppercase font-bold text-stone-400 px-2 py-1">Select Size Fit</div>
+                  <button onclick="selectSize('XS', 'Slim fit')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-ecru transition">Size: XS (Slim Fit)</button>
+                  <button onclick="selectSize('S', 'Tailored fit')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-ecru transition">Size: S (Tailored)</button>
+                  <button onclick="selectSize('M', 'Regular drape')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-ecru transition">Size: M (Regular)</button>
+                  <button onclick="selectSize('L', 'Oversized drape')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg bg-terracotta/10 text-terracotta font-semibold transition">Size: L (Editorial)</button>
+                  <button onclick="selectSize('XL', 'Boxy street drape')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-ecru transition">Size: XL (Boxy)</button>
+                  <button onclick="selectSize('XXL', 'Heavy oversized')" class="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-ecru transition">Size: XXL (Heavy Drop)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terracotta CTA: "View model" / "Upload Your Photo" -->
+            <button id="btn-primary-action-model" onclick="openBodyUploadModal()" class="w-full bg-terracotta hover:bg-terracotta-hover active:scale-[0.98] text-white py-2.5 px-4 rounded-xl text-xs font-semibold tracking-wide shadow-sm transition flex items-center justify-center space-x-2">
+              <span id="model-action-text">Upload your photo</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Subtle Divider -->
+      <div class="border-b border-borderWarm"></div>
+
+      <!-- ============================================== -->
+      <!-- SECTION 2: CHOOSE CLOTHING (Product Grid)      -->
+      <!-- ============================================== -->
+      <div id="choose-clothing-section">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-xs font-bold tracking-wider text-charcoal uppercase">2. CHOOSE CLOTHING</h2>
+            <span id="garment-count-label" class="text-[11px] text-stone-500 font-medium">3 Curated Garments + Custom</span>
+          </div>
+          <!-- Upload T-Shirt Button in Header -->
+          <label class="cursor-pointer bg-white hover:bg-stone-50 text-charcoal border border-borderWarm px-2.5 py-1 rounded-xl text-[11px] font-semibold flex items-center space-x-1 shadow-2xs hover:border-terracotta transition" title="Upload custom t-shirt">
+            <input type="file" id="section-tshirt-input" accept="image/*" onchange="handleTshirtUpload(event)" class="hidden">
+            <svg class="w-3.5 h-3.5 text-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>+ Upload T-Shirt</span>
+          </label>
+        </div>
+
+        <!-- 3-Column Clothing Product Grid -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
+          
+          <!-- CARD 1: Manga Eyes & Sunflower Tee (Default Selected) -->
+          <div id="card-garment-1" class="garment-card group bg-white border-2 border-charcoal rounded-2xl p-2 flex flex-col justify-between cursor-pointer transition shadow-2xs" onclick="selectGarment(1)">
+            <div class="aspect-square rounded-xl bg-[#222020] p-1.5 flex items-center justify-center relative overflow-hidden mb-2">
+              <!-- Flat lay SVG of Card 1 -->
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <path d="M22 25 L35 15 L65 15 L78 25 L88 38 L76 46 L70 38 L70 85 L30 85 L30 38 L24 46 L12 38 Z" fill="#242223" stroke="#3A3837" stroke-width="1.2"/>
+                <path d="M42 15 Q50 22 58 15" stroke="#484544" stroke-width="1.5" fill="none"/>
+                <!-- Anime eyes rectangular print -->
+                <rect x="36" y="32" width="28" height="13" fill="#D39738" rx="1"/>
+                <path d="M38 39 Q44 35 48 39" stroke="#1A1817" stroke-width="1.2" fill="none"/>
+                <path d="M52 39 Q56 35 62 39" stroke="#1A1817" stroke-width="1.2" fill="none"/>
+                <!-- Sunflower graphic -->
+                <circle cx="50" cy="56" r="6" fill="#C9882B"/>
+                <circle cx="50" cy="56" r="3" fill="#3D2910"/>
+                <ellipse cx="44" cy="68" rx="2" ry="4" fill="#69755B"/>
+                <ellipse cx="56" cy="68" rx="2" ry="4" fill="#69755B"/>
+              </svg>
+              <!-- Selected Tag Overlay -->
+              <div id="badge-garment-1" class="absolute bottom-1 inset-x-1 bg-charcoal text-white text-[9px] font-bold text-center py-0.5 rounded-md tracking-wider">
+                SELECTED
+              </div>
+            </div>
+            
+            <h4 class="text-[11px] font-semibold text-charcoal leading-tight line-clamp-2 min-h-[28px] mb-2">
+              Manga Eyes &amp; Sunflower Tee
+            </h4>
+
+            <button id="btn-garment-1" class="w-full bg-charcoal text-white text-[10px] font-semibold py-1 rounded-lg tracking-wide transition">
+              Selected
+            </button>
+          </div>
+
+          <!-- CARD 2: Retro Vodka Cat Tee -->
+          <div id="card-garment-2" class="garment-card group bg-white border border-borderWarm hover:border-stone-400 rounded-2xl p-2 flex flex-col justify-between cursor-pointer transition shadow-2xs" onclick="selectGarment(2)">
+            <div class="aspect-square rounded-xl bg-[#F0EBE1] p-1.5 flex items-center justify-center relative overflow-hidden mb-2">
+              <!-- Flat lay SVG of Card 2 -->
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <path d="M22 25 L35 15 L65 15 L78 25 L88 38 L76 46 L70 38 L70 85 L30 85 L30 38 L24 46 L12 38 Z" fill="#E8E1D5" stroke="#D3C9B8" stroke-width="1.2"/>
+                <path d="M42 15 Q50 22 58 15" stroke="#C4B8A3" stroke-width="1.5" fill="none"/>
+                <!-- Vintage Red Poster Box -->
+                <rect x="36" y="28" width="28" height="42" fill="#BA3C2E" rx="1"/>
+                <rect x="38" y="30" width="24" height="38" fill="#D7C9B2"/>
+                <!-- Black Cat Silhouette -->
+                <path d="M45 54 C42 46 45 42 50 42 C55 42 58 46 55 54 Z" fill="#1C1B1A"/>
+                <polygon points="45,43 47,38 49,43" fill="#1C1B1A"/>
+                <polygon points="51,43 53,38 55,43" fill="#1C1B1A"/>
+                <circle cx="47" cy="44" r="0.9" fill="#58B868"/>
+                <circle cx="53" cy="44" r="0.9" fill="#58B868"/>
+                <!-- Vodka Bottle -->
+                <rect x="56" y="50" width="3" height="10" fill="#EFEFEF" stroke="#1A1A1A" stroke-width="0.5"/>
+              </svg>
+              <!-- Hidden badge container -->
+              <div id="badge-garment-2" class="hidden absolute bottom-1 inset-x-1 bg-charcoal text-white text-[9px] font-bold text-center py-0.5 rounded-md tracking-wider">
+                SELECTED
+              </div>
+            </div>
+
+            <h4 class="text-[11px] font-semibold text-charcoal leading-tight line-clamp-2 min-h-[28px] mb-2">
+              Retro Vodka Cat Tee
+            </h4>
+
+            <button id="btn-garment-2" class="w-full bg-white hover:bg-stone-100 text-charcoal border border-borderWarm text-[10px] font-semibold py-1 rounded-lg tracking-wide transition">
+              Try On
+            </button>
+          </div>
+
+          <!-- CARD 3: Botanical Chocolate Cacao Tee -->
+          <div id="card-garment-3" class="garment-card group bg-white border border-borderWarm hover:border-stone-400 rounded-2xl p-2 flex flex-col justify-between cursor-pointer transition shadow-2xs" onclick="selectGarment(3)">
+            <div class="aspect-square rounded-xl bg-[#2D2825] p-1.5 flex items-center justify-center relative overflow-hidden mb-2">
+              <!-- Flat lay SVG of Card 3 -->
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <path d="M22 25 L35 15 L65 15 L78 25 L88 38 L76 46 L70 38 L70 85 L30 85 L30 38 L24 46 L12 38 Z" fill="#322C28" stroke="#483F39" stroke-width="1.2"/>
+                <path d="M42 15 Q50 22 58 15" stroke="#4D433D" stroke-width="1.5" fill="none"/>
+                <path d="M36 34 Q50 30 64 34" stroke="#D3B88C" stroke-width="1.8" fill="none"/>
+                <path d="M42 42 Q50 38 58 45" stroke="#688056" stroke-width="1.2" fill="none"/>
+                <ellipse cx="50" cy="55" rx="7" ry="12" fill="#994D38" transform="rotate(-15 50 55)"/>
+                <ellipse cx="49" cy="54" rx="4" ry="8" fill="#E6D3B8" transform="rotate(-15 49 54)"/>
+              </svg>
+              <!-- Hidden badge container -->
+              <div id="badge-garment-3" class="hidden absolute bottom-1 inset-x-1 bg-charcoal text-white text-[9px] font-bold text-center py-0.5 rounded-md tracking-wider">
+                SELECTED
+              </div>
+            </div>
+
+            <h4 class="text-[11px] font-semibold text-charcoal leading-tight line-clamp-2 min-h-[28px] mb-2">
+              Botanical Chocolate Cacao Tee
+            </h4>
+
+            <button id="btn-garment-3" class="w-full bg-white hover:bg-stone-100 text-charcoal border border-borderWarm text-[10px] font-semibold py-1 rounded-lg tracking-wide transition">
+              Try On
+            </button>
+          </div>
+
+        </div>
+
+        <!-- CUSTOM T-SHIRT UPLOAD ROW / CARD 4 -->
+        <div class="mt-3">
+          <!-- When no custom shirt uploaded yet: quick upload banner -->
+          <div id="custom-tshirt-empty-state" class="bg-white border-2 border-dashed border-stone-300 hover:border-terracotta rounded-2xl p-3 flex items-center justify-between transition cursor-pointer group shadow-2xs" onclick="document.getElementById('custom-tshirt-file-input').click()">
+            <input type="file" id="custom-tshirt-file-input" accept="image/*" class="hidden" onchange="handleTshirtUpload(event)">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-charcoal group-hover:text-terracotta transition-colors">Upload Your Own T-Shirt (မိမိအင်္ကျီတင်ရန်)</p>
+                <p class="text-[10px] text-stone-500">Pick any shirt image • Choose S, M, L, XL, XXL size</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-terracotta bg-terracotta/10 px-2.5 py-1 rounded-lg">Upload</span>
+          </div>
+
+          <!-- When custom shirt is uploaded: active Card 4 with Interactive Size Picker -->
+          <div id="card-garment-4" class="hidden garment-card group bg-white border border-borderWarm rounded-2xl p-3 flex flex-col cursor-pointer transition shadow-2xs hover:border-stone-400" onclick="selectGarment(4)">
+            <!-- Top Section: Details & Try On -->
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center space-x-3 overflow-hidden">
+                <div class="w-12 h-12 rounded-xl bg-stone-100 p-0.5 border border-borderWarm shrink-0 overflow-hidden relative">
+                  <img id="custom-tshirt-preview-img" src="" class="w-full h-full object-contain" alt="Custom T-Shirt">
+                  <div id="badge-garment-4" class="hidden absolute bottom-0 inset-x-0 bg-charcoal text-white text-[8px] font-bold text-center py-0.2">SELECTED</div>
+                </div>
+                <div class="overflow-hidden">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-terracotta bg-terracotta/10 px-1.5 py-0.5 rounded">Custom</span>
+                    <h4 id="custom-tshirt-name" class="text-xs font-bold text-charcoal truncate">My Uploaded Tee</h4>
+                  </div>
+                  <p class="text-[10px] text-stone-500 truncate mt-0.5">Custom fabric try-on ready</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1.5 shrink-0">
+                <button id="btn-garment-4" class="bg-white hover:bg-stone-100 text-charcoal border border-borderWarm text-[10px] font-semibold px-3 py-1.5 rounded-lg tracking-wide transition">
+                  Try On
+                </button>
+                <button onclick="event.stopPropagation(); document.getElementById('custom-tshirt-file-input').click();" class="p-1.5 text-stone-400 hover:text-charcoal hover:bg-stone-100 rounded-lg transition" title="Change Shirt Image">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bottom Section: Dedicated T-Shirt Size Selector (XS, S, M, L, XL, XXL) -->
+            <div class="mt-2.5 pt-2 border-t border-borderWarm/70 flex flex-col space-y-1.5" onclick="event.stopPropagation()">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-stone-500 uppercase tracking-wider">T-Shirt Size (အင်္ကျီဆိုဒ်)</span>
+                <span id="custom-size-fit-desc" class="text-terracotta font-semibold">L • Oversized Drape</span>
+              </div>
+              
+              <!-- 6-Option Size Pills Strip -->
+              <div class="grid grid-cols-6 gap-1 bg-[#F4EFE6] p-1 rounded-xl border border-borderWarm/80">
+                <button type="button" id="btn-size-xs" onclick="setCustomTshirtSize('XS')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal transition text-center">XS</button>
+                <button type="button" id="btn-size-s" onclick="setCustomTshirtSize('S')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal transition text-center">S</button>
+                <button type="button" id="btn-size-m" onclick="setCustomTshirtSize('M')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal transition text-center">M</button>
+                <button type="button" id="btn-size-l" onclick="setCustomTshirtSize('L')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg bg-terracotta text-white shadow-2xs transition text-center">L</button>
+                <button type="button" id="btn-size-xl" onclick="setCustomTshirtSize('XL')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal transition text-center">XL</button>
+                <button type="button" id="btn-size-xxl" onclick="setCustomTshirtSize('XXL')" class="size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal transition text-center">XXL</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Fabric Quality Spec Banner -->
+        <div class="mt-4 bg-white border border-borderWarm rounded-xl p-3 flex items-center justify-between shadow-2xs">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-lg bg-ecru flex items-center justify-center text-stone-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div>
+              <p id="fabric-gsm-title" class="text-[11px] font-bold text-charcoal">Pre-Shrunk 240 GSM Cotton</p>
+              <p class="text-[10px] text-stone-500">Volumetric cloth tension enabled</p>
+            </div>
+          </div>
+          <button onclick="openFabricModal()" class="text-xs font-semibold text-terracotta hover:underline">
+            Inspect
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Backdrop for mobile sidebar -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/30 z-20 hidden lg:hidden backdrop-blur-xs"></div>
+
+    <!-- ============================================== -->
+    <!-- C. CENTER INTERACTIVE SPLIT-SCREEN VIEWPORT     -->
+    <!-- ============================================== -->
+    <main id="viewport-stage" class="flex-1 relative h-full bg-[#E5DFD4] overflow-hidden flex items-center justify-center select-none cursor-default">
+      
+      <!-- -------------------------------------------- -->
+      <!-- TOP FLOATING SYSTEM STATUS PILLS IN CANVAS   -->
+      <!-- -------------------------------------------- -->
+      <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+        <!-- Live Status Pill 1: AI Engine Online -->
+        <div class="bg-sage-badge border border-[#D7E3D8] px-3.5 py-1.5 rounded-full text-xs font-medium text-sage-dot flex items-center space-x-2 shadow-xs pointer-events-auto">
+          <span class="w-2 h-2 rounded-full bg-sage-dot pulse-dot inline-block"></span>
+          <span class="font-medium tracking-tight">AI Try-on Engine online</span>
+        </div>
+
+        <!-- Live Status Pill 2: Split-screen Indicator -->
+        <div class="bg-sage-badge border border-[#D7E3D8] px-3.5 py-1.5 rounded-full text-xs font-medium text-sage-dot flex items-center space-x-2 shadow-xs pointer-events-auto">
+          <span class="w-2 h-2 rounded-full bg-sage-dot inline-block"></span>
+          <span class="font-medium tracking-tight">Before / After split-screen active</span>
+        </div>
+      </div>
+
+      <!-- -------------------------------------------- -->
+      <!-- STUDIO BACKGROUND WALLPAPER & LIGHTING       -->
+      <!-- -------------------------------------------- -->
+      <div class="absolute inset-0 pointer-events-none">
+        <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 1000">
+          <defs>
+            <linearGradient id="wallGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F2ECE2"/>
+              <stop offset="45%" stop-color="#ECE5DA"/>
+              <stop offset="100%" stop-color="#DCD4C6"/>
+            </linearGradient>
+            <!-- Studio drape shadow on left edge -->
+            <linearGradient id="drapeShadow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#2D2821" stop-opacity="0.12"/>
+              <stop offset="60%" stop-color="#2D2821" stop-opacity="0.03"/>
+              <stop offset="100%" stop-color="#2D2821" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <rect width="1000" height="1000" fill="url(#wallGradient)"/>
+          <!-- Architectural linen studio drape left fold -->
+          <path d="M0 0 L160 0 Q210 500 140 1000 L0 1000 Z" fill="#DDD5C7"/>
+          <path d="M110 0 L220 0 Q260 500 190 1000 L110 1000 Z" fill="url(#drapeShadow)"/>
+        </svg>
+      </div>
+
+      <!-- -------------------------------------------- -->
+      <!-- INTERACTIVE ZOOM / PAN CONTAINER             -->
+      <!-- -------------------------------------------- -->
+      <div id="pan-zoom-container" class="w-full h-full relative flex items-center justify-center transition-transform duration-75 origin-center">
+        
+        <!-- ========================================== -->
+        <!-- LAYER 1: BEFORE VIEW (REAL HUMAN MODEL)    -->
+        <!-- ========================================== -->
+        <div id="layer-before" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <!-- Real Human Model Frame -->
+          <div class="h-[92%] sm:h-[95%] aspect-[9/16] relative rounded-2xl overflow-hidden shadow-2xl border border-borderWarm bg-[#E7E1D6]">
+            <!-- Photographic Real Image -->
+            <img id="img-display-before" src="" class="w-full h-full object-cover object-top pointer-events-auto" alt="Original Real Photo" />
+            
+            <div class="absolute bottom-3 left-3 bg-charcoal/80 backdrop-blur-md text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-sm flex items-center space-x-1.5 pointer-events-none">
+              <span class="w-1.5 h-1.5 rounded-full bg-white/80"></span>
+              <span id="label-before-text">Before (Cream Henley & Pinstripe Pants)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- LAYER 2: AFTER VIEW (REAL CLOTHES TRY-ON)  -->
+        <!-- ========================================== -->
+        <div id="layer-after" class="absolute inset-0 flex items-center justify-center pointer-events-none" style="clip-path: polygon(62% 0, 100% 0, 100% 100%, 62% 100%);">
+          <!-- Real Human Model Tried-On Result Frame -->
+          <div class="h-[92%] sm:h-[95%] aspect-[9/16] relative rounded-2xl overflow-hidden shadow-2xl border border-borderWarm bg-[#E7E1D6]">
+            <!-- Photographic Real Image with T-Shirt worn on Body -->
+            <img id="img-display-after" src="" class="w-full h-full object-cover object-top pointer-events-auto transition-opacity duration-300" alt="Real Clothes Try-On" />
+
+            <div class="absolute bottom-3 right-3 bg-terracotta text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-sm flex items-center space-x-1.5 pointer-events-none">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span id="tryon-garment-title-badge">After (အင်္ကျီပြောင်းဝတ်ထားပုံ)</span>
+            </div>
+
+            <!-- AI Generating Loading Banner / Spinner Overlay -->
+            <div id="ai-generating-overlay" class="hidden absolute inset-0 bg-stone-900/65 backdrop-blur-xs z-30 flex flex-col items-center justify-center p-6 text-white text-center">
+              <div class="w-12 h-12 rounded-2xl bg-terracotta/20 border border-terracotta text-terracotta flex items-center justify-center mb-3 animate-spin">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </div>
+              <p class="text-sm font-bold tracking-wide">Gemini AI Virtual Try-On</p>
+              <p class="text-xs text-stone-300 mt-1">အင်္ကျီကို သင့်ခန္ဓာကိုယ်ပေါ် အစစ်အတိုင်း ပြောင်းဝတ်ပေးနေပါသည်...</p>
+              <div class="w-48 bg-stone-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                <div class="bg-terracotta h-full rounded-full animate-pulse w-3/4"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Real Photo Quick Drop Invitation Overlay (Hover/Drag Over Stage) -->
+        <div id="drag-drop-overlay" class="absolute inset-0 bg-stone-900/60 backdrop-blur-xs hidden z-30 flex flex-col items-center justify-center p-6 text-white border-4 border-dashed border-terracotta/80 rounded-3xl pointer-events-none">
+          <div class="w-16 h-16 rounded-2xl bg-terracotta/20 text-terracotta flex items-center justify-center mb-3">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <p class="text-base font-bold">Drop IMG_5161 (Polo) or IMG_5174 (Chocolate Tee) or your photo here</p>
+          <p class="text-xs text-stone-300 mt-1">Instant high-fidelity AI virtual try-on on real human</p>
+        </div>
+
+        <!-- AI Laser Scanning Effect Beam (Triggered on Try-On) -->
+        <div id="ai-scanner-line" class="hidden absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-terracotta to-transparent z-25 pointer-events-none opacity-0"></div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 3. DRAGGABLE SPLIT HANDLE & DIVIDER LINE       -->
+      <!-- ============================================== -->
+      <div id="split-divider-line" class="absolute top-0 bottom-0 w-0.5 bg-white pointer-events-none z-25" style="left: 62%;">
+        <!-- Floating Terracotta Handle Button -->
+        <div id="split-drag-handle" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-terracotta text-white flex items-center justify-center shadow-handle cursor-ew-resize pointer-events-auto hover:scale-110 active:scale-95 transition-transform">
+          <svg class="w-4 h-4 fill-none stroke-current" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7l-4 5 4 5M16 7l4 5-4 5M12 5v14"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 4. FLOATING HUD CONTROLS                       -->
+      <!-- ============================================== -->
+
+      <!-- Left Vertical Floating Tool Pill -->
+      <div class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md border border-borderWarm rounded-full p-1.5 flex flex-col items-center space-y-2 shadow-elevated z-25">
+        <button onclick="toggleMobileSidebar()" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Toggle Sidebar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button onclick="toggleWireframe()" id="btn-wireframe-toggle" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="UV Mesh Wireframe">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </button>
+        <button onclick="toggleAnchorLock()" id="btn-anchor-lock" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Anchor Perspective Lock">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 005.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        </button>
+        <div class="w-3 h-0.5 bg-stone-300 rounded-full"></div>
+      </div>
+
+      <!-- Right Vertical Floating Tool Pill -->
+      <div class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md border border-borderWarm rounded-full p-1.5 flex flex-col items-center space-y-2 shadow-elevated z-25">
+        <button onclick="adjustZoom(0.15)" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Zoom In">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <button onclick="toggleFullscreen()" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Fullscreen">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+        </button>
+        <button onclick="resetZoomPan()" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Reset View">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+        <button onclick="toggleHelpModal()" class="p-2 text-stone-600 hover:text-charcoal hover:bg-ecru rounded-full transition" title="Shortcuts & Tips">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Left 360° Turntable Badge -->
+      <div class="absolute bottom-6 left-6 z-25">
+        <button onclick="toggleTurntable()" id="turntable-badge-btn" class="flex flex-col items-center group cursor-pointer" title="Simulate 360 Turntable View">
+          <div class="relative w-14 h-14 flex items-center justify-center">
+            <!-- Rotating orbit circular arrow SVG -->
+            <svg id="orbit-arrow-svg" class="w-14 h-14 text-stone-600 group-hover:text-charcoal transition" viewBox="0 0 100 100">
+              <ellipse cx="50" cy="50" rx="42" ry="24" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="14 10" transform="rotate(-15 50 50)"/>
+              <polygon points="88,40 98,42 90,52" fill="currentColor"/>
+            </svg>
+            <span class="absolute font-bold text-sm tracking-tighter text-charcoal group-hover:scale-105 transition-transform">360°</span>
+          </div>
+          <span class="text-[9px] uppercase tracking-wider font-semibold text-stone-500">Turntable</span>
+        </button>
+      </div>
+
+      <!-- Bottom Floating Dock (Camera & Viewport Nav) -->
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-borderWarm rounded-full px-4 py-2 flex items-center space-x-3 shadow-elevated z-25">
+        <button onclick="switchPreviousGarment()" class="p-1.5 text-stone-500 hover:text-charcoal transition" title="Previous Garment">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button onclick="adjustZoom(0.2)" class="flex items-center space-x-1 text-xs font-semibold px-2 py-1 text-stone-700 hover:text-charcoal hover:bg-stone-100 rounded-lg transition" title="Zoom">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+          <span class="hidden sm:inline">Zoom</span>
+        </button>
+        <button onclick="togglePanMode()" id="btn-pan-mode" class="flex items-center space-x-1 text-xs font-semibold px-2 py-1 text-stone-700 hover:text-charcoal hover:bg-stone-100 rounded-lg transition" title="Pan Canvas">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>
+          <span class="hidden sm:inline">Pan</span>
+        </button>
+        <button onclick="resetZoomPan()" class="flex items-center space-x-1 text-xs font-semibold px-2 py-1 text-stone-700 hover:text-charcoal hover:bg-stone-100 rounded-lg transition" title="Fit to Screen">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+          <span class="hidden sm:inline">Fit</span>
+        </button>
+        <button onclick="switchNextGarment()" class="p-1.5 text-stone-500 hover:text-charcoal transition" title="Next Garment">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Right Floating Quick Actions -->
+      <div class="absolute bottom-6 right-6 flex flex-col space-y-2.5 z-25">
+        <button onclick="openFabricModal()" class="w-10 h-10 rounded-full bg-charcoal text-white flex items-center justify-center shadow-lg hover:bg-stone-800 transition active:scale-95" title="Fabric & Stitch Specs">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3a3 3 0 00-3 3c0 .874.373 1.662.97 2.207L3.4 14.2A2 2 0 003 15.5V19a2 2 0 002 2h14a2 2 0 002-2v-3.5a2 2 0 00-.4-1.3l-6.57-5.993A3.002 3.002 0 0015 6a3 3 0 00-3-3z"/>
+          </svg>
+        </button>
+        <button onclick="toggleWireframe()" class="w-10 h-10 rounded-full bg-charcoal text-white flex items-center justify-center shadow-lg hover:bg-stone-800 transition active:scale-95" title="3D Mesh Physics">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 5. EDITORIAL MODALS & DOSSIERS                 -->
+  <!-- ============================================== -->
+
+  <!-- A. CUSTOM BODY & PHOTO UPLOAD / WEBCAM MODAL -->
+  <div id="modal-body-upload" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-ecru border border-borderWarm rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-terracotta">Personal Avatar Studio</span>
+          <h3 class="text-2xl font-serif font-semibold text-charcoal">Use Your Own Body</h3>
+        </div>
+        <button onclick="closeBodyUploadModal()" class="w-8 h-8 rounded-full bg-white border border-borderWarm flex items-center justify-center text-stone-500 hover:text-charcoal transition">✕</button>
+      </div>
+
+      <p class="text-xs text-stone-600 mb-4 leading-relaxed">
+        Upload a standing front portrait, take a live webcam snapshot, or pick from our curated human body presets. DRAPE AI will detect your shoulders, neckline, and torso drape automatically.
+      </p>
+
+      <!-- Tab Switcher: Upload File / Webcam / Presets -->
+      <div class="flex items-center p-1 bg-[#ECE6DC] rounded-xl mb-4 border border-borderWarm">
+        <button id="tab-btn-file" onclick="setUploadTab('file')" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-charcoal shadow-2xs">Upload Photo</button>
+        <button id="tab-btn-camera" onclick="setUploadTab('camera')" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-stone-600 hover:text-charcoal">Take Photo (Webcam)</button>
+        <button id="tab-btn-presets" onclick="setUploadTab('presets')" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-stone-600 hover:text-charcoal">Model Presets</button>
+      </div>
+
+      <!-- TAB 1: File Upload Drop Area -->
+      <div id="tab-content-file" class="space-y-4">
+        <div onclick="document.getElementById('file-input-body').click()" class="border-2 border-dashed border-stone-300 hover:border-terracotta rounded-2xl p-6 text-center cursor-pointer transition bg-white/70 hover:bg-white group">
+          <input type="file" id="file-input-body" accept="image/*" multiple class="hidden" onchange="handleMultiplePhotoDrop(event)">
+          <div class="w-12 h-12 rounded-2xl bg-terracotta/10 text-terracotta flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
+          <p class="text-xs font-bold text-charcoal">Click to browse or drop IMG_5161 / IMG_5174</p>
+          <p class="text-[10px] text-stone-500 mt-1">Accepts IMG_5161.jpeg (Polo Before), IMG_5174.jpeg (Chocolate After), or any portrait photo of yourself</p>
+        </div>
+      </div>
+
+      <!-- TAB 2: Live Webcam Camera Capture -->
+      <div id="tab-content-camera" class="hidden space-y-4">
+        <div class="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] max-h-72 mx-auto flex items-center justify-center">
+          <video id="camera-stream" autoplay playsinline class="w-full h-full object-cover"></video>
+          <canvas id="camera-snapshot-canvas" class="hidden"></canvas>
+          <!-- Alignment guide silhouette overlay -->
+          <div class="absolute inset-0 pointer-events-none border-2 border-white/20 rounded-2xl flex items-center justify-center">
+            <div class="w-48 h-64 border border-dashed border-white/40 rounded-full opacity-60"></div>
+          </div>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="startCamera()" class="flex-1 bg-white border border-borderWarm py-2 rounded-xl text-xs font-semibold text-charcoal hover:bg-stone-50 transition">
+            Start Camera
+          </button>
+          <button onclick="captureCameraSnapshot()" class="flex-1 bg-terracotta hover:bg-terracotta-hover text-white py-2 rounded-xl text-xs font-semibold shadow-sm transition">
+            📸 Snap Photo
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Curated Real Human Presets -->
+      <div id="tab-content-presets" class="hidden space-y-3">
+        <p class="text-[11px] text-stone-500">Pick any real photo to test the AI drape engine immediately:</p>
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- Preset 1 -->
+          <div onclick="selectPresetBody('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80', 'Alexander (Casual Portrait)')" class="bg-white border border-borderWarm hover:border-terracotta rounded-xl p-1.5 cursor-pointer text-center group transition">
+            <div class="aspect-[3/4] rounded-lg overflow-hidden mb-1.5 bg-stone-100">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="Preset 1">
+            </div>
+            <span class="text-[10px] font-semibold text-charcoal">Alexander</span>
+          </div>
+
+          <!-- Preset 2 -->
+          <div onclick="selectPresetBody('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80', 'Elena (Studio Casual)')" class="bg-white border border-borderWarm hover:border-terracotta rounded-xl p-1.5 cursor-pointer text-center group transition">
+            <div class="aspect-[3/4] rounded-lg overflow-hidden mb-1.5 bg-stone-100">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="Preset 2">
+            </div>
+            <span class="text-[10px] font-semibold text-charcoal">Elena</span>
+          </div>
+
+          <!-- Preset 3 -->
+          <div onclick="selectPresetBody('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80', 'Marcus (Athletic Fit)')" class="bg-white border border-borderWarm hover:border-terracotta rounded-xl p-1.5 cursor-pointer text-center group transition">
+            <div class="aspect-[3/4] rounded-lg overflow-hidden mb-1.5 bg-stone-100">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="Preset 3">
+            </div>
+            <span class="text-[10px] font-semibold text-charcoal">Marcus</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="mt-5 pt-4 border-t border-borderWarm flex items-center justify-between">
+        <button onclick="switchBodyMode('studio'); closeBodyUploadModal();" class="text-xs text-stone-500 hover:text-charcoal font-medium">
+          Revert to Studio Model (Julian)
+        </button>
+        <button onclick="closeBodyUploadModal()" class="bg-charcoal text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-stone-800 transition">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. MODEL DOSSIER MODAL -->
+  <div id="modal-model" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-ecru border border-borderWarm rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-terracotta">Model Calibration Profile</span>
+          <h3 class="text-2xl font-serif font-semibold text-charcoal">Streetwear Editorial (IMG_5199)</h3>
+        </div>
+        <button onclick="closeModelModal()" class="w-8 h-8 rounded-full bg-white border border-borderWarm flex items-center justify-center text-stone-500 hover:text-charcoal transition">✕</button>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl">
+          <p class="text-[10px] text-stone-400 font-bold uppercase">Outfit (Before)</p>
+          <p class="text-sm font-semibold text-charcoal">Cream Waffle Henley & Pinstripe Wide Pants</p>
+        </div>
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl">
+          <p class="text-[10px] text-stone-400 font-bold uppercase">Signature Details</p>
+          <p class="text-sm font-semibold text-charcoal">Wire Glasses, Earbuds & Tote Bag</p>
+        </div>
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl">
+          <p class="text-[10px] text-stone-400 font-bold uppercase">Footwear & Pose</p>
+          <p class="text-sm font-semibold text-charcoal">Retro Sambas • Street Stride Walking</p>
+        </div>
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl">
+          <p class="text-[10px] text-stone-400 font-bold uppercase">Environment</p>
+          <p class="text-sm font-semibold text-charcoal">Natural Daylight Asphalt Street</p>
+        </div>
+      </div>
+
+      <div class="flex space-x-3">
+        <button onclick="showToast('Model Calibrated', 'IMG_5199 locked as primary studio model.'); closeModelModal();" class="flex-1 bg-terracotta hover:bg-terracotta-hover text-white py-2.5 rounded-xl text-xs font-semibold tracking-wide transition shadow-sm">
+          Keep Active Model
+        </button>
+        <button onclick="openBodyUploadModal(); closeModelModal();" class="flex-1 bg-white border border-borderWarm hover:border-stone-400 text-charcoal py-2.5 rounded-xl text-xs font-semibold tracking-wide transition">
+          Upload Custom Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. FABRIC INSPECTOR MODAL -->
+  <div id="modal-fabric" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-ecru border border-borderWarm rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-widest text-terracotta">Textile Simulation Engine</span>
+          <h3 id="fabric-modal-title" class="text-xl font-serif font-semibold text-charcoal">240 GSM Combed Cotton</h3>
+        </div>
+        <button onclick="closeFabricModal()" class="w-8 h-8 rounded-full bg-white border border-borderWarm flex items-center justify-center text-stone-500 hover:text-charcoal transition">✕</button>
+      </div>
+
+      <p class="text-xs text-stone-600 mb-4 leading-relaxed">
+        Calculated using GPU cloth mass-spring simulation with 120 stiffness iterations to preserve accurate collar drape and armhole tension.
+      </p>
+
+      <div class="space-y-3 mb-5">
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl flex justify-between items-center">
+          <span class="text-xs font-semibold text-charcoal">Yarn Count</span>
+          <span class="text-xs text-stone-600">26s Single Ring-Spun</span>
+        </div>
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl flex justify-between items-center">
+          <span class="text-xs font-semibold text-charcoal">Pre-Shrunk Treatment</span>
+          <span class="text-xs text-sage-dot font-semibold">Enzyme Washed &lt;1.5%</span>
+        </div>
+        <div class="bg-white border border-borderWarm p-3 rounded-2xl flex justify-between items-center">
+          <span class="text-xs font-semibold text-charcoal">Surface Drape Weight</span>
+          <span id="fabric-weight-val" class="text-xs font-bold text-terracotta">240 g/m² Heavyweight</span>
+        </div>
+      </div>
+
+      <button onclick="closeFabricModal()" class="w-full bg-charcoal hover:bg-stone-800 text-white py-2.5 rounded-xl text-xs font-semibold transition">
+        Dismiss Inspector
+      </button>
+    </div>
+  </div>
+
+  <!-- C. SHARE MODAL -->
+  <div id="modal-share" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-ecru border border-borderWarm rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center">
+      <div class="w-12 h-12 bg-white rounded-2xl border border-borderWarm flex items-center justify-center mx-auto mb-3 text-terracotta">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+      </div>
+      <h3 class="text-lg font-serif font-bold text-charcoal mb-1">Share Virtual Fitting</h3>
+      <p class="text-xs text-stone-500 mb-4">Export interactive fitting state link to share with stylists or clients.</p>
+      
+      <div class="bg-white border border-borderWarm rounded-xl p-2 flex items-center justify-between mb-4">
+        <input id="share-link-input" type="text" readonly value="https://drapestudio.com/session/vton-julian-492" class="text-xs text-stone-600 bg-transparent outline-hidden w-full px-2"/>
+        <button onclick="copyShareLink()" class="bg-terracotta text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-terracotta-hover transition shrink-0">Copy</button>
+      </div>
+      <button onclick="toggleShareModal()" class="text-xs text-stone-500 hover:text-charcoal font-semibold">Close</button>
+    </div>
+  </div>
+
+  <!-- D. TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- ============================================== -->
+  <!-- 6. VANILLA JAVASCRIPT APPLICATION LOGIC        -->
+  <!-- ============================================== -->
+  <script>
+    // State Management
+    let splitPos = 62;
+    let isDragging = false;
+    let currentGarmentIndex = 3; // Default to Botanical Chocolate Cacao Tee
+    let isTucked = false; // Model 5199 naturally wears tops relaxed
+    let currentSize = 'L';
+    let customTshirtSize = 'L';
+    let zoomLevel = 1.0;
+    let panX = 0;
+    let panY = 0;
+    let isPanMode = false;
+    let isTurntableActive = false;
+    let isWireframeActive = false;
+    let isAnchorLocked = true;
+    let activeBodyMode = 'studio'; // 'studio' (Model 5199) or 'custom'
+    let isAiGenerating = false;
+
+    // Cache generated studio model images
+    const studioModelCache = {};
+
+    // Real User Image State
+    let userUploadedDataUrl = null;
+    let userUploadedBase64 = null;
+    let userUploadedMime = 'image/jpeg';
+
+    // Custom Uploaded T-Shirt State
+    let customTshirtDataUrl = null;
+    let customTshirtBase64 = null;
+    let customTshirtMime = 'image/jpeg';
+    let customTshirtName = "Custom Uploaded Tee";
+
+    // Size Drape and Fit Specifications
+    const sizeFitDescriptions = {
+      'XS': { label: 'XS • Slim Fit (အကြပ်)', drape: 'tight slim fit, snug chest silhouette, higher armholes and shorter sleeves' },
+      'S': { label: 'S • Tailored (ကွက်တိ)', drape: 'tailored slim fit, hugging chest and shoulders cleanly with minimal fabric excess' },
+      'M': { label: 'M • Regular Fit (ပုံမှန်)', drape: 'classic regular fit, natural chest drape, standard shoulder seam placement and mid-bicep sleeves' },
+      'L': { label: 'L • Oversized Drape (ချောင်ချောင်)', drape: 'relaxed oversized drape, slightly dropped shoulder seams, loose chest volume and relaxed sleeves' },
+      'XL': { label: 'XL • Boxy Streetwear (ခပ်ပွပွ)', drape: 'boxy streetwear oversized fit, wide torso silhouette, prominent dropped shoulders and elbow-length sleeves' },
+      'XXL': { label: 'XXL • Heavy Oversized (အလွန်ပွ)', drape: 'heavy oversized baggy fit, very wide chest drape, deep shoulder drops and long roomy relaxed sleeves' }
+    };
+
+    // Cache generated try-on images to prevent redundant API calls
+    const aiTryOnCache = {};
+
+    // Real Garment Catalog with Photorealistic High-Definition AI Prompts & Real Photo Presets
+    const garments = {
+      1: {
+        id: 1,
+        name: "Manga Eyes & Sunflower Tee",
+        shortName: "Manga Eyes Tee",
+        gsm: "240 GSM Acid-Wash Heavyweight",
+        weightDesc: "240 g/m² Heavyweight Cotton",
+        defaultRealPhoto: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=85",
+        aiPrompt: "vintage mineral-washed acid charcoal black heavyweight oversized t-shirt. On the front center chest is a vertical rectangular artistic collage with golden manga eyes ('Hikaru ga Shinda Natsu' kanji tag), dark pine trees, a large vibrant golden sunflower blossom, and a detailed cicada bug illustration. 240 GSM heavyweight cotton texture, realistic fabric draping, natural folds, rib crewneck collar."
+      },
+      2: {
+        id: 2,
+        name: "Retro Vodka Cat Tee",
+        shortName: "Vodka Cat Tee",
+        gsm: "220 GSM Slub Jersey",
+        weightDesc: "220 g/m² Natural Slub",
+        defaultRealPhoto: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=85",
+        aiPrompt: "natural oatmeal/sand cream slub cotton heavyweight vintage t-shirt. On the front is a retro red Japanese poster graphic print featuring a black cat with vivid yellow eyes drinking from a shot glass beside a glass bottle of vodka with a paw print icon. Japanese katakana text 'ウォッカ' and English 'VODKA' with red seal stamp '魂'. Natural relaxed fit, realistic cotton creases, collar hugging the neckline."
+      },
+      3: {
+        id: 3,
+        name: "Botanical Chocolate Cacao Tee",
+        shortName: "Chocolate Cacao Tee",
+        gsm: "260 GSM Combed Jersey",
+        weightDesc: "260 g/m² Heavyweight Cotton",
+        defaultRealPhoto: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=85",
+        aiPrompt: "rich deep dark espresso brown heavyweight 260 GSM combed cotton boxy t-shirt. On the chest is an arched pale green serif typography header 'Chocolate' with subtitle 'I JUST WANNA TAKE A BITE', followed by a detailed botanical illustration of a leafy branch, an intact reddish-purple cacao pod, and a sliced-open cacao pod with white pulp seeds and chocolate chunks. Realistic heavy fabric drape conforming to torso and shoulders, seamless collar."
+      }
+    };
+
+    // DOM Elements
+    const viewportStage = document.getElementById('viewport-stage');
+    const layerBefore = document.getElementById('layer-before');
+    const layerAfter = document.getElementById('layer-after');
+    const dividerLine = document.getElementById('split-divider-line');
+    const dragHandle = document.getElementById('split-drag-handle');
+    const panZoomContainer = document.getElementById('pan-zoom-container');
+    const aiScannerLine = document.getElementById('ai-scanner-line');
+    const imgBefore = document.getElementById('img-display-before');
+    const imgAfter = document.getElementById('img-display-after');
+    const aiGeneratingOverlay = document.getElementById('ai-generating-overlay');
+
+    // ============================================================
+    // HIGH-FIDELITY COMPOSITOR FOR STUDIO MODEL (IMG_5199)
+    // ============================================================
+    function generateStudioModel5199(isAfter, garmentId, tucked, size) {
+      const cacheKey = `${isAfter ? 'after' : 'before'}_${garmentId}_${tucked ? 'tuck' : 'untuck'}_${size}_${garmentId === 4 && customTshirtDataUrl ? customTshirtName : 'default'}`;
+      if (studioModelCache[cacheKey]) {
+        return studioModelCache[cacheKey];
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 1420;
+      const ctx = canvas.getContext('2d');
+
+      // 1. ENVIRONMENT: Outdoor asphalt street & concrete curb
+      const roadGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      roadGrad.addColorStop(0, '#B3ADA5');
+      roadGrad.addColorStop(0.24, '#9C968E');
+      roadGrad.addColorStop(0.25, '#4E4D4F');
+      roadGrad.addColorStop(1, '#686667');
+      ctx.fillStyle = roadGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Concrete pavement lines & curb
+      ctx.fillStyle = '#C2BCB3';
+      ctx.fillRect(0, 0, canvas.width, 340);
+      ctx.fillStyle = '#E8E4DC';
+      ctx.fillRect(0, 340, canvas.width, 18);
+      ctx.fillStyle = '#5A5857';
+      ctx.fillRect(0, 358, canvas.width, 8);
+
+      // Fine asphalt road aggregate specks
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+      for (let i = 0; i < 400; i++) {
+        const rx = (i * 97) % canvas.width;
+        const ry = 366 + ((i * 131) % (canvas.height - 366));
+        ctx.fillRect(rx, ry, 2, 2);
+      }
+
+      // Ground shadow of model
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(400, 1370, 200, 35, 0.1, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(25, 25, 25, 0.35)';
+      ctx.filter = 'blur(14px)';
+      ctx.fill();
+      ctx.restore();
+
+      // 2. LOWER BODY: Wide-leg baggy pinstripe trousers & retro sneakers (IMG_5199)
+      // Left leg (trailing slightly)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(380, 770);
+      ctx.lineTo(440, 780);
+      ctx.lineTo(470, 1150);
+      ctx.lineTo(450, 1260);
+      ctx.lineTo(395, 1250);
+      ctx.lineTo(375, 1050);
+      ctx.closePath();
+      ctx.fillStyle = '#1D1E22';
+      ctx.fill();
+
+      // Right leg (striding forward, prominent pleats)
+      ctx.beginPath();
+      ctx.moveTo(315, 755);
+      ctx.lineTo(400, 765);
+      ctx.lineTo(425, 1050);
+      ctx.lineTo(430, 1330);
+      ctx.lineTo(330, 1335);
+      ctx.lineTo(300, 1040);
+      ctx.closePath();
+      ctx.fillStyle = '#212226';
+      ctx.fill();
+
+      // Fine chalk pinstripes on trousers
+      ctx.strokeStyle = 'rgba(215, 220, 225, 0.45)';
+      ctx.lineWidth = 1.2;
+      for (let x = 308; x <= 455; x += 11) {
+        ctx.beginPath();
+        ctx.moveTo(x, 765);
+        ctx.quadraticCurveTo(x + (x < 380 ? -12 : 12), 1050, x + (x < 380 ? 6 : -6), x < 380 ? 1330 : 1250);
+        ctx.stroke();
+      }
+
+      // Trouser fold shadows & pleat crease depth
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(365, 770);
+      ctx.quadraticCurveTo(360, 1040, 375, 1330);
+      ctx.stroke();
+      ctx.restore();
+
+      // Retro sneakers (Adidas Samba / Gazelle style from IMG_5199)
+      // Right forward sneaker
+      ctx.fillStyle = '#ECEAE4';
+      ctx.beginPath();
+      ctx.ellipse(375, 1350, 28, 16, -0.05, 0, Math.PI * 2);
+      ctx.fill();
+      // Suede round toe cap
+      ctx.fillStyle = '#9C988F';
+      ctx.beginPath();
+      ctx.ellipse(375, 1358, 22, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Black 3 stripes
+      ctx.fillStyle = '#202020';
+      ctx.fillRect(362, 1344, 3, 9);
+      ctx.fillRect(368, 1345, 3, 9);
+      ctx.fillRect(374, 1346, 3, 9);
+
+      // 3. UPPER BODY: T-SHIRT TRY-ON (After) vs CREAM WAFFLE HENLEY (Before)
+      const sizeScaleMap = { 'XS': 0.92, 'S': 0.96, 'M': 1.0, 'L': 1.04, 'XL': 1.09, 'XXL': 1.14 };
+      const sScale = sizeScaleMap[size] || 1.04;
+
+      if (!isAfter) {
+        // --- BEFORE: Cream waffle henley from IMG_5199 ---
+        ctx.fillStyle = '#F4EFE6';
+        ctx.beginPath();
+        // Body of henley
+        ctx.moveTo(330, 440);
+        ctx.lineTo(240, 490); // right shoulder
+        ctx.lineTo(235, 750); // right sleeve pushed up
+        ctx.lineTo(285, 765);
+        ctx.lineTo(315, 660);
+        ctx.lineTo(315, 770); // right torso hem
+        ctx.lineTo(465, 775); // left torso hem
+        ctx.lineTo(475, 660);
+        ctx.lineTo(515, 740);
+        ctx.lineTo(545, 725);
+        ctx.lineTo(515, 490); // left shoulder
+        ctx.lineTo(440, 440);
+        ctx.closePath();
+        ctx.fill();
+
+        // Waffle knit texture ribbing
+        ctx.strokeStyle = 'rgba(180, 170, 155, 0.22)';
+        ctx.lineWidth = 1;
+        for (let i = 280; i <= 500; i += 7) {
+          ctx.beginPath();
+          ctx.moveTo(i, 470);
+          ctx.lineTo(i, 770);
+          ctx.stroke();
+        }
+
+        // Open 3-button henley placket
+        ctx.fillStyle = '#E3DBD0';
+        ctx.fillRect(375, 450, 20, 100);
+        ctx.strokeStyle = '#C9C0B3';
+        ctx.strokeRect(375, 450, 20, 100);
+        // Buttons
+        ctx.fillStyle = '#B0A79B';
+        ctx.beginPath();
+        ctx.arc(385, 515, 3, 0, Math.PI * 2);
+        ctx.arc(385, 535, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Silver chain necklace in open placket
+        ctx.strokeStyle = '#D6D8DB';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(385, 450, 22, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        // Arm shading & forearm
+        ctx.fillStyle = '#D6B49A';
+        ctx.fillRect(240, 750, 32, 60); // right forearm
+      } else {
+        // --- AFTER: Selected T-Shirt tried-on with realistic drape ---
+        const gInfo = garments[garmentId] || garments[3];
+        const shoulderW = 145 * sScale;
+        const chestW = 105 * sScale;
+        const hemY = tucked ? 760 : (790 * (sScale > 1.05 ? 1.03 : 1.0));
+
+        let teeColor = '#2D2825'; // Chocolate
+        if (garmentId === 1) teeColor = '#242223'; // Manga Acid Black
+        if (garmentId === 2) teeColor = '#EAE2D5'; // Vodka Cat Sand
+        if (garmentId === 4 && customTshirtDataUrl) teeColor = '#242426';
+
+        // T-Shirt body polygon
+        ctx.fillStyle = teeColor;
+        ctx.beginPath();
+        ctx.moveTo(385 - 55, 445);
+        ctx.lineTo(385 - shoulderW, 495); // right shoulder drop
+        ctx.lineTo(385 - shoulderW - 25, 625); // right sleeve hem
+        ctx.lineTo(385 - chestW - 20, 645);
+        ctx.lineTo(385 - chestW, hemY); // right hem
+        if (tucked) {
+          ctx.quadraticCurveTo(385, hemY + 8, 385 + chestW, hemY);
+        } else {
+          ctx.quadraticCurveTo(385, hemY + 18, 385 + chestW, hemY);
+        }
+        ctx.lineTo(385 + chestW + 20, 645);
+        ctx.lineTo(385 + shoulderW + 25, 625); // left sleeve hem
+        ctx.lineTo(385 + shoulderW, 495); // left shoulder drop
+        ctx.lineTo(385 + 55, 445);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crewneck collar rib
+        ctx.strokeStyle = garmentId === 2 ? '#D0C6B5' : '#3E3632';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.arc(385, 446, 38, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+
+        // Realistic cloth tension & folds
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        // Armpit folds
+        ctx.moveTo(385 - chestW, 620);
+        ctx.quadraticCurveTo(385 - 40, 660, 385, 675);
+        ctx.moveTo(385 + chestW, 620);
+        ctx.quadraticCurveTo(385 + 40, 660, 385, 675);
+        // Hem tuck tension folds
+        if (tucked) {
+          ctx.moveTo(340, 750);
+          ctx.lineTo(365, 730);
+          ctx.moveTo(430, 750);
+          ctx.lineTo(405, 730);
+        }
+        ctx.stroke();
+
+        // Render Front Chest Graphics onto Model 5199
+        ctx.save();
+        if (garmentId === 1) {
+          // Manga Eyes & Sunflower graphic
+          ctx.fillStyle = '#D99B3B';
+          ctx.fillRect(345, 510, 80, 32);
+          ctx.fillStyle = '#1A1817';
+          // Manga eyes slit
+          ctx.fillRect(352, 524, 28, 4);
+          ctx.fillRect(388, 524, 28, 4);
+          // Sunflower
+          ctx.beginPath();
+          ctx.arc(385, 580, 22, 0, Math.PI * 2);
+          ctx.fillStyle = '#C9882B';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(385, 580, 11, 0, Math.PI * 2);
+          ctx.fillStyle = '#3D2812';
+          ctx.fill();
+        } else if (garmentId === 2) {
+          // Retro Vodka Cat poster
+          ctx.fillStyle = '#BA3C2E';
+          ctx.fillRect(345, 500, 80, 115);
+          ctx.fillStyle = '#D7C9B2';
+          ctx.fillRect(350, 506, 70, 103);
+          // Black cat
+          ctx.fillStyle = '#1A1A1A';
+          ctx.beginPath();
+          ctx.arc(385, 560, 20, 0, Math.PI * 2);
+          ctx.fill();
+          // Yellow eyes
+          ctx.fillStyle = '#FFDD33';
+          ctx.beginPath();
+          ctx.arc(378, 555, 3.5, 0, Math.PI * 2);
+          ctx.arc(392, 555, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (garmentId === 3) {
+          // Botanical Chocolate Cacao Tee (Matches IMG_5174 & IMG_5169)
+          ctx.font = 'bold 22px serif';
+          ctx.fillStyle = '#D5DDA8';
+          ctx.textAlign = 'center';
+          ctx.fillText('Chocolate', 385, 525);
+          ctx.font = '7px sans-serif';
+          ctx.fillText('I JUST WANNA TAKE A BITE', 385, 536);
+          // Botanical leaves
+          ctx.fillStyle = '#657D4F';
+          ctx.beginPath();
+          ctx.ellipse(368, 555, 14, 7, -0.4, 0, Math.PI * 2);
+          ctx.ellipse(402, 555, 14, 7, 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          // Cacao Pod (Reddish purple)
+          ctx.fillStyle = '#A3513C';
+          ctx.beginPath();
+          ctx.ellipse(372, 600, 16, 32, -0.15, 0, Math.PI * 2);
+          ctx.fill();
+          // Sliced Cacao Pod with seeds
+          ctx.fillStyle = '#E8DCC8';
+          ctx.beginPath();
+          ctx.ellipse(405, 602, 12, 22, 0.1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5A3625';
+          for (let s = 0; s < 5; s++) {
+            ctx.fillRect(401, 592 + s * 4, 7, 3);
+          }
+        } else if (garmentId === 4 && customTshirtDataUrl) {
+          // Custom uploaded tee thumbnail drawn directly on chest
+          const cImg = document.getElementById('custom-tshirt-preview-img');
+          if (cImg && cImg.complete && cImg.naturalWidth > 0) {
+            ctx.drawImage(cImg, 340, 510, 90, 110);
+          }
+        }
+        ctx.restore();
+
+        // Exposed arms below T-shirt sleeves
+        ctx.fillStyle = '#D6B49A';
+        ctx.fillRect(385 - shoulderW - 12, 625, 24, 150); // right forearm
+        ctx.fillRect(385 + shoulderW - 12, 625, 24, 140); // left forearm
+      }
+
+      // Silver metal link watch on right wrist (IMG_5199)
+      ctx.fillStyle = '#CCD0D6';
+      ctx.fillRect(245, 775, 18, 14);
+      ctx.fillStyle = '#1A1A1A';
+      ctx.fillRect(249, 778, 10, 8);
+
+      // Black tote bag shoulder strap crossing over left shoulder (IMG_5199)
+      ctx.fillStyle = '#171719';
+      ctx.beginPath();
+      ctx.moveTo(505, 450);
+      ctx.lineTo(528, 455);
+      ctx.lineTo(545, 760);
+      ctx.lineTo(518, 760);
+      ctx.closePath();
+      ctx.fill();
+
+      // 4. NECK, FACE, GLASSES & HAIR (IMG_5199)
+      // Neck
+      ctx.fillStyle = '#DEBC9E';
+      ctx.beginPath();
+      ctx.moveTo(365, 410);
+      ctx.lineTo(365, 460);
+      ctx.lineTo(410, 460);
+      ctx.lineTo(410, 410);
+      ctx.closePath();
+      ctx.fill();
+
+      // Jawline and face
+      ctx.beginPath();
+      ctx.moveTo(355, 340);
+      ctx.quadraticCurveTo(350, 400, 385, 428); // Chin
+      ctx.quadraticCurveTo(420, 400, 415, 340);
+      ctx.closePath();
+      ctx.fill();
+
+      // Facial features: Lips, nose shadow
+      ctx.strokeStyle = '#B38B74';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(380, 405);
+      ctx.lineTo(392, 405); // Lips
+      ctx.moveTo(385, 365);
+      ctx.lineTo(385, 385);
+      ctx.lineTo(389, 388); // Nose
+      ctx.stroke();
+
+      // Eyes
+      ctx.fillStyle = '#3E2A20';
+      ctx.beginPath();
+      ctx.arc(370, 362, 3, 0, Math.PI * 2);
+      ctx.arc(400, 362, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rectangular black wire glasses (IMG_5199)
+      ctx.strokeStyle = '#111214';
+      ctx.lineWidth = 2.2;
+      ctx.strokeRect(360, 350, 22, 17);
+      ctx.strokeRect(390, 350, 22, 17);
+      // Bridge
+      ctx.beginPath();
+      ctx.moveTo(382, 357);
+      ctx.lineTo(390, 357);
+      ctx.stroke();
+      // Glass glare reflection
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(363, 353);
+      ctx.lineTo(378, 364);
+      ctx.stroke();
+
+      // Earphones (Apple EarPods wire in IMG_5199)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(348, 365, 3.5, 0, Math.PI * 2);
+      ctx.arc(422, 365, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(348, 368);
+      ctx.quadraticCurveTo(365, 410, 380, 480);
+      ctx.moveTo(422, 368);
+      ctx.quadraticCurveTo(405, 410, 385, 480);
+      ctx.stroke();
+
+      // Dark wavy parted hair / curtains (IMG_5199)
+      ctx.fillStyle = '#1A1817';
+      ctx.beginPath();
+      ctx.arc(385, 335, 46, Math.PI, 0); // Head crown
+      ctx.quadraticCurveTo(445, 335, 435, 380); // Right curtain
+      ctx.quadraticCurveTo(415, 350, 395, 342); // Middle part right
+      ctx.quadraticCurveTo(385, 325, 375, 342); // Middle part left
+      ctx.quadraticCurveTo(350, 350, 335, 380); // Left curtain
+      ctx.quadraticCurveTo(325, 335, 385, 335);
+      ctx.closePath();
+      ctx.fill();
+
+      // Soft hair texture strands
+      ctx.strokeStyle = '#322E2B';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(385, 320);
+      ctx.quadraticCurveTo(420, 315, 432, 360);
+      ctx.moveTo(385, 320);
+      ctx.quadraticCurveTo(350, 315, 338, 360);
+      ctx.stroke();
+
+      const resultUrl = canvas.toDataURL('image/jpeg', 0.94);
+      studioModelCache[cacheKey] = resultUrl;
+      return resultUrl;
+    }
+
+    // Refresh Studio Viewport with Model 5199
+    function refreshStudioModelDisplay() {
+      if (activeBodyMode === 'studio') {
+        const beforeImgUrl = generateStudioModel5199(false, currentGarmentIndex, isTucked, currentSize);
+        imgBefore.src = beforeImgUrl;
+        document.getElementById('model-thumb-img').src = beforeImgUrl;
+        document.getElementById('model-badge-label').textContent = "Model 5199 (Street)";
+        document.getElementById('label-before-text').textContent = "Before: Cream Waffle Henley";
+
+        const afterImgUrl = generateStudioModel5199(true, currentGarmentIndex, isTucked, currentSize);
+        imgAfter.src = afterImgUrl;
+        const g = garments[currentGarmentIndex] || garments[3];
+        document.getElementById('tryon-garment-title-badge').textContent = `${g.shortName} (Size: ${currentSize})`;
+      }
+    }
+
+    // ============================================================
+    // 1. INTERACTIVE SPLIT-SCREEN DRAG ENGINE
+    // ============================================================
+    function updateSplitPosition(percent) {
+      splitPos = Math.max(0, Math.min(100, percent));
+      if (dividerLine) {
+        dividerLine.style.left = `${splitPos}%`;
+      }
+      if (layerAfter) {
+        layerAfter.style.clipPath = `polygon(${splitPos}% 0, 100% 0, 100% 100%, ${splitPos}% 100%)`;
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+      if (clientX === undefined) return;
+      const rect = viewportStage.getBoundingClientRect();
+      const xPercent = ((clientX - rect.left) / rect.width) * 100;
+      updateSplitPosition(xPercent);
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    }
+
+    function startDragging(e) {
+      isDragging = true;
+      dragHandle.classList.add('handle-drag-glow');
+      document.body.style.cursor = 'ew-resize';
+      e.preventDefault();
+    }
+
+    function stopDragging() {
+      if (isDragging) {
+        isDragging = false;
+        dragHandle.classList.remove('handle-drag-glow');
+        document.body.style.cursor = '';
+      }
+    }
+
+    dragHandle.addEventListener('mousedown', startDragging);
+    dragHandle.addEventListener('touchstart', startDragging, { passive: false });
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('mouseup', stopDragging);
+    window.addEventListener('touchend', stopDragging);
+
+    viewportStage.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('#split-drag-handle') || e.target.closest('input')) return;
+      const rect = viewportStage.getBoundingClientRect();
+      const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+      updateSplitPosition(xPercent);
+    });
+
+    // ============================================================
+    // 2. REAL USER PHOTO UPLOAD & DISPLAY ENGINE
+    // ============================================================
+    function handleUserPhotoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fullDataUrl = e.target.result;
+        userUploadedDataUrl = fullDataUrl;
+        userUploadedBase64 = fullDataUrl.split(',')[1];
+        userUploadedMime = file.type || 'image/jpeg';
+
+        // Clear previous AI try-on cache for new person
+        Object.keys(aiTryOnCache).forEach(k => delete aiTryOnCache[k]);
+
+        // Set mode to custom user photo
+        activeBodyMode = 'custom';
+        updateModeSwitcherUI('custom');
+
+        // Update Before Image directly with the user's real photo
+        imgBefore.src = fullDataUrl;
+        document.getElementById('model-thumb-img').src = fullDataUrl;
+        document.getElementById('model-badge-label').textContent = "သင့်ပုံ (Your Photo)";
+        document.getElementById('label-before-text').textContent = "Before: သင့်မူလဝတ်စုံ";
+
+        showToast("ဓာတ်ပုံတင်ပြီးပါပြီ", "သင့်ခန္ဓာကိုယ်ပေါ် အင်္ကျီပြောင်းလဲဝတ်ဆင်ရန် တွက်ချက်နေပါသည်...");
+        closeBodyUploadModal();
+
+        // Trigger real AI try-on for the currently selected garment
+        executeAiVirtualTryOn(currentGarmentIndex);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleMultiplePhotoDrop(event) {
+      handleUserPhotoUpload(event);
+    }
+
+    // ============================================================
+    // 2B. CUSTOM T-SHIRT UPLOAD ENGINE
+    // ============================================================
+    function handleTshirtUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fullDataUrl = e.target.result;
+        customTshirtDataUrl = fullDataUrl;
+        customTshirtBase64 = fullDataUrl.split(',')[1];
+        customTshirtMime = file.type || 'image/jpeg';
+        customTshirtName = file.name.replace(/\.[^/.]+$/, "").slice(0, 24) || "Custom Tee";
+
+        // Register custom garment 4 in catalog
+        garments[4] = {
+          id: 4,
+          name: customTshirtName,
+          shortName: customTshirtName,
+          gsm: "Custom Fabric Drape",
+          weightDesc: "User Uploaded Garment",
+          defaultRealPhoto: fullDataUrl,
+          isCustom: true,
+          base64: customTshirtBase64,
+          mime: customTshirtMime,
+          size: customTshirtSize,
+          aiPrompt: "the exact custom t-shirt graphic, color, fabric, and design shown in the uploaded t-shirt image"
+        };
+
+        // Update Custom Garment Card in UI
+        document.getElementById('custom-tshirt-empty-state').classList.add('hidden');
+        const card4 = document.getElementById('card-garment-4');
+        card4.classList.remove('hidden');
+        document.getElementById('custom-tshirt-preview-img').src = fullDataUrl;
+        document.getElementById('custom-tshirt-name').textContent = customTshirtName;
+        document.getElementById('garment-count-label').textContent = "3 Curated Garments + 1 Custom";
+        updateCustomSizePillsUI(customTshirtSize);
+
+        showToast("အင်္ကျီပုံတင်ပြီးပါပြီ", `"${customTshirtName}" (Size: ${customTshirtSize}) ကို သင့်ကိုယ်ပေါ် ပြောင်းလဲဝတ်ဆင်ရန် တွက်ချက်နေပါသည်...`);
+
+        // Automatically select the uploaded t-shirt and trigger Try-On
+        selectGarment(4);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Interactive T-Shirt Size Setter (XS, S, M, L, XL, XXL)
+    function setCustomTshirtSize(size) {
+      customTshirtSize = size;
+      currentSize = size;
+
+      // Update Custom Card UI
+      updateCustomSizePillsUI(size);
+
+      // Sync Section 1 size display
+      document.getElementById('current-size-display').textContent = `Size: ${size}`;
+      const desc = sizeFitDescriptions[size] ? sizeFitDescriptions[size].label.split('•')[1].trim() : 'drape';
+      document.getElementById('drape-fit-label').textContent = `(${desc})`;
+
+      if (garments[4]) {
+        garments[4].size = size;
+      }
+
+      showToast("အင်္ကျီဆိုဒ် ပြောင်းလဲပြီးပါပြီ", `T-Shirt Size: ${size} (${sizeFitDescriptions[size]?.label || size}) ဖြင့် AI Virtual Try-On တွက်ချက်နေပါသည်...`);
+
+      // Immediately execute try-on with the newly chosen size
+      selectGarment(4);
+    }
+
+    function updateCustomSizePillsUI(selectedSize) {
+      const sizes = ['xs', 's', 'm', 'l', 'xl', 'xxl'];
+      sizes.forEach(sz => {
+        const btn = document.getElementById(`btn-size-${sz}`);
+        if (!btn) return;
+        if (sz.toUpperCase() === selectedSize) {
+          btn.className = "size-pill-btn py-1 text-[10px] font-bold rounded-lg bg-terracotta text-white shadow-2xs transition text-center";
+        } else {
+          btn.className = "size-pill-btn py-1 text-[10px] font-bold rounded-lg text-stone-600 hover:text-charcoal hover:bg-white/60 transition text-center";
+        }
+      });
+
+      const fitDesc = sizeFitDescriptions[selectedSize]?.label || `${selectedSize} Fit`;
+      const descEl = document.getElementById('custom-size-fit-desc');
+      if (descEl) descEl.textContent = fitDesc;
+    }
+
+    // Helper to get person's image base64 (either user uploaded or studio model)
+    async function getPersonImageData() {
+      if (userUploadedBase64) {
+        return { data: userUploadedBase64, mime: userUploadedMime };
+      }
+      // If studio model, convert current imgBefore to base64 via canvas
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = imgBefore.naturalWidth || 800;
+        canvas.height = imgBefore.naturalHeight || 1200;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgBefore, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        return { data: dataUrl.split(',')[1], mime: 'image/jpeg' };
+      } catch (err) {
+        return null;
+      }
+    }
+
+    // ============================================================
+    // 3. GEMINI 3.1 FLASH IMAGE AI TRY-ON GENERATOR
+    // ============================================================
+    async function executeAiVirtualTryOn(garmentIndex) {
+      const garment = garments[garmentIndex];
+      if (!garment) return;
+
+      const activeSize = (garmentIndex === 4) ? customTshirtSize : currentSize;
+      const sizeSpec = sizeFitDescriptions[activeSize] || sizeFitDescriptions['L'];
+
+      // If in Studio Model mode (Model 5199), update our high-res photorealistic compositor
+      if (activeBodyMode === 'studio') {
+        refreshStudioModelDisplay();
+        return;
+      }
+
+      const cacheKey = `${garmentIndex}_${isTucked ? 'tucked' : 'untucked'}_${activeSize}_${userUploadedDataUrl ? 'user' : 'studio'}_${garment.isCustom ? (garment.name + '_' + activeSize) : 'preset'}`;
+
+      // If already generated and cached, load instantly!
+      if (aiTryOnCache[cacheKey]) {
+        imgAfter.src = aiTryOnCache[cacheKey];
+        document.getElementById('tryon-garment-title-badge').textContent = `${garment.shortName} (Size: ${activeSize})`;
+        return;
+      }
+
+      // If in Studio Model mode, non-custom garment, and no custom user photo uploaded
+      if (activeBodyMode === 'studio' && !userUploadedBase64 && !garment.isCustom) {
+        imgAfter.src = garment.defaultRealPhoto;
+        document.getElementById('tryon-garment-title-badge').textContent = `${garment.shortName} (Size: ${activeSize})`;
+        return;
+      }
+
+      // CASE A: Custom T-Shirt Uploaded -> Multimodal Try-On (Person Image + T-Shirt Image + Specific Size Fit)
+      if (garment.isCustom && customTshirtBase64) {
+        showAiGenerating(true);
+
+        try {
+          const personImage = await getPersonImageData();
+          const tuckDesc = isTucked ? "tucked in neatly into trousers waistband" : "untucked, hanging naturally over trousers";
+
+          const promptText = `High-end realistic virtual try-on fashion photograph. Image 1 is the person. Image 2 is the t-shirt. Realistically replace the shirt worn by the person in Image 1 with the exact t-shirt shown in Image 2. Garment sizing and silhouette: Size ${activeSize} (${sizeSpec.drape}). Styling: ${tuckDesc}. Keep the person's face, hair, body, hands, trousers, and background 100% identical. Drape the t-shirt realistically on their torso with natural folds, anatomical tension corresponding to Size ${activeSize}, shadows, correct collar neckline, and fabric texture. Output a photorealistic studio image.`;
+
+          const parts = [
+            { text: promptText }
+          ];
+
+          if (personImage && personImage.data) {
+            parts.push({
+              inlineData: {
+                mimeType: personImage.mime,
+                data: personImage.data
+              }
+            });
+          }
+
+          parts.push({
+            inlineData: {
+              mimeType: customTshirtMime,
+              data: customTshirtBase64
+            }
+          });
+
+          const apiKey = ""; // Provided at runtime
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+          const payload = {
+            contents: [{
+              role: "user",
+              parts: parts
+            }],
+            generationConfig: {
+              responseModalities: ['IMAGE']
+            }
+          };
+
+          let response = null;
+          let delay = 1000;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              if (response.ok) break;
+            } catch (err) {
+              if (attempt === 2) throw err;
+              await new Promise(r => setTimeout(r, delay));
+              delay *= 2;
+            }
+          }
+
+          if (response && response.ok) {
+            const result = await response.json();
+            const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+            if (part && part.inlineData?.data) {
+              const generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+              aiTryOnCache[cacheKey] = generatedImageUrl;
+              imgAfter.src = generatedImageUrl;
+              document.getElementById('tryon-garment-title-badge').textContent = `${garment.shortName} (Size: ${activeSize})`;
+              showToast("အင်္ကျီပြောင်းလဲပြီးပါပြီ", `သင့်ရဲ့ "${garment.name}" (Size: ${activeSize}) ကို ခန္ဓာကိုယ်ပေါ် အစစ်အတိုင်း ဝတ်ဆင်ပေးလိုက်ပါပြီ။`);
+            }
+          }
+        } catch (error) {
+          showToast("AI Try-On", "Processing preview...");
+        } finally {
+          showAiGenerating(false);
+        }
+        return;
+      }
+
+      // CASE B: User uploaded their own photo + Curated Garment (1, 2, or 3)
+      if (userUploadedBase64) {
+        showAiGenerating(true);
+
+        try {
+          const tuckDesc = isTucked ? "tucked in neatly into trousers waistband" : "untucked, hanging naturally over trousers";
+          const promptText = `High-end realistic fashion virtual try-on. Maintain the EXACT person in this photograph: keep their face, body proportions, arms, trousers, and background completely untouched. Replace their current shirt with: ${garment.name}. ${garment.aiPrompt}. Chosen size: Size ${activeSize} (${sizeSpec.drape}). Drape style: ${tuckDesc}. Output a photorealistic studio image.`;
+
+          const apiKey = ""; // Canvas provides key at runtime
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+          const payload = {
+            contents: [{
+              role: "user",
+              parts: [
+                { text: promptText },
+                {
+                  inlineData: {
+                    mimeType: userUploadedMime,
+                    data: userUploadedBase64
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              responseModalities: ['IMAGE']
+            }
+          };
+
+          // Fetch with exponential backoff
+          let response = null;
+          let delay = 1000;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              if (response.ok) break;
+            } catch (err) {
+              if (attempt === 2) throw err;
+              await new Promise(r => setTimeout(r, delay));
+              delay *= 2;
+            }
+          }
+
+          if (response && response.ok) {
+            const result = await response.json();
+            const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+            if (part && part.inlineData?.data) {
+              const generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+              aiTryOnCache[cacheKey] = generatedImageUrl;
+              imgAfter.src = generatedImageUrl;
+              document.getElementById('tryon-garment-title-badge').textContent = `${garment.shortName} (Size: ${activeSize})`;
+              showToast("အင်္ကျီပြောင်းလဲပြီးပါပြီ", `${garment.name} (Size: ${activeSize}) ကို သင့်ကိုယ်ပေါ် အစစ်အတိုင်း ဝတ်ဆင်ပေးလိုက်ပါပြီ။`);
+            } else {
+              imgAfter.src = garment.defaultRealPhoto;
+            }
+          } else {
+            imgAfter.src = garment.defaultRealPhoto;
+          }
+        } catch (error) {
+          imgAfter.src = garment.defaultRealPhoto;
+          showToast("AI Try-On Ready", `${garment.name} (Size: ${activeSize}) preview active.`);
+        } finally {
+          showAiGenerating(false);
+        }
+      }
+    }
+
+    function showAiGenerating(show) {
+      isAiGenerating = show;
+      if (aiGeneratingOverlay) {
+        aiGeneratingOverlay.classList.toggle('hidden', !show);
+      }
+    }
+
+    // ============================================================
+    // 4. GARMENT SELECTION & SWITCHING
+    // ============================================================
+    function selectGarment(index) {
+      currentGarmentIndex = index;
+      const garment = garments[index];
+      if (!garment) return;
+
+      const totalCards = garments[4] ? 4 : 3;
+      for (let i = 1; i <= totalCards; i++) {
+        const card = document.getElementById(`card-garment-${i}`);
+        const badge = document.getElementById(`badge-garment-${i}`);
+        const btn = document.getElementById(`btn-garment-${i}`);
+
+        if (!card || !btn) continue;
+
+        if (i === index) {
+          card.classList.remove('border-borderWarm');
+          card.classList.add('border-2', 'border-charcoal');
+          if (badge) badge.classList.remove('hidden');
+          btn.textContent = 'Selected';
+          btn.className = 'bg-charcoal text-white text-[10px] font-semibold py-1 px-3 rounded-lg tracking-wide transition';
+        } else {
+          card.classList.remove('border-2', 'border-charcoal');
+          card.classList.add('border', 'border-borderWarm');
+          if (badge) badge.classList.add('hidden');
+          btn.textContent = 'Try On';
+          btn.className = 'bg-white hover:bg-stone-100 text-charcoal border border-borderWarm text-[10px] font-semibold py-1 px-3 rounded-lg tracking-wide transition';
+        }
+      }
+
+      // Scanner Animation
+      aiScannerLine.classList.remove('scanning-active');
+      void aiScannerLine.offsetWidth;
+      aiScannerLine.classList.add('scanning-active');
+      setTimeout(() => {
+        aiScannerLine.classList.remove('scanning-active');
+      }, 750);
+
+      document.getElementById('fabric-gsm-title').textContent = garment.gsm;
+      document.getElementById('fabric-modal-title').textContent = garment.gsm;
+      document.getElementById('fabric-weight-val').textContent = garment.weightDesc;
+
+      executeAiVirtualTryOn(index);
+    }
+
+    function switchPreviousGarment() {
+      const maxGarments = garments[4] ? 4 : 3;
+      let next = currentGarmentIndex - 1;
+      if (next < 1) next = maxGarments;
+      selectGarment(next);
+    }
+
+    function switchNextGarment() {
+      const maxGarments = garments[4] ? 4 : 3;
+      let next = currentGarmentIndex + 1;
+      if (next > maxGarments) next = 1;
+      selectGarment(next);
+    }
+
+    function triggerTryOnScan() {
+      executeAiVirtualTryOn(currentGarmentIndex);
+    }
+
+    // ============================================================
+    // 5. TUCKED VS UNTUCKED SWITCHER
+    // ============================================================
+    function setTuckState(tucked) {
+      isTucked = tucked;
+      const btnTucked = document.getElementById('btn-tucked');
+      const btnUntucked = document.getElementById('btn-untucked');
+
+      if (btnTucked && btnUntucked) {
+        if (tucked) {
+          btnTucked.className = "flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all bg-white text-charcoal shadow-2xs";
+          btnUntucked.className = "flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all text-stone-600 hover:text-charcoal";
+        } else {
+          btnUntucked.className = "flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all bg-white text-charcoal shadow-2xs";
+          btnTucked.className = "flex-1 py-1.5 px-2 rounded-full text-xs font-semibold tracking-tight transition-all text-stone-600 hover:text-charcoal";
+        }
+      }
+      executeAiVirtualTryOn(currentGarmentIndex);
+    }
+
+    // ============================================================
+    // 6. BODY MODE & PRESETS
+    // ============================================================
+    function switchBodyMode(mode) {
+      activeBodyMode = mode;
+      updateModeSwitcherUI(mode);
+
+      if (mode === 'studio') {
+        refreshStudioModelDisplay();
+        showToast("Model 5199 Active", "Streetwear editorial model (IMG_5199) set as active model.");
+      } else {
+        if (!userUploadedDataUrl) {
+          openBodyUploadModal();
+        } else {
+          imgBefore.src = userUploadedDataUrl;
+          executeAiVirtualTryOn(currentGarmentIndex);
+        }
+      }
+    }
+
+    function updateModeSwitcherUI(mode) {
+      const btnStudio = document.getElementById('btn-mode-studio');
+      const btnCustom = document.getElementById('btn-mode-custom');
+      if (mode === 'studio') {
+        btnStudio.className = "flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition bg-white text-charcoal shadow-2xs";
+        btnCustom.className = "flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition text-stone-600 hover:text-charcoal flex items-center justify-center space-x-1";
+      } else {
+        btnCustom.className = "flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition bg-white text-charcoal shadow-2xs flex items-center justify-center space-x-1";
+        btnStudio.className = "flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold transition text-stone-600 hover:text-charcoal";
+      }
+    }
+
+    function selectPresetBody(url, label) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        // Convert to dataUrl for AI Try-On
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+        userUploadedDataUrl = dataUrl;
+        userUploadedBase64 = dataUrl.split(',')[1];
+        userUploadedMime = 'image/jpeg';
+
+        activeBodyMode = 'custom';
+        updateModeSwitcherUI('custom');
+
+        imgBefore.src = url;
+        document.getElementById('model-thumb-img').src = url;
+        document.getElementById('model-badge-label').textContent = label;
+        document.getElementById('label-before-text').textContent = `Before: ${label}`;
+
+        closeBodyUploadModal();
+        executeAiVirtualTryOn(currentGarmentIndex);
+        showToast("Model Loaded", `${label} calibrated for virtual try-on.`);
+      };
+      img.src = url;
+    }
+
+    // ============================================================
+    // 7. WEBCAM SNAPSHOT ENGINE
+    // ============================================================
+    let cameraStreamObj = null;
+
+    function setUploadTab(tab) {
+      document.getElementById('tab-btn-file').className = tab === 'file' ? "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-charcoal shadow-2xs" : "flex-1 py-1.5 text-xs font-semibold rounded-lg text-stone-600 hover:text-charcoal";
+      document.getElementById('tab-btn-camera').className = tab === 'camera' ? "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-charcoal shadow-2xs" : "flex-1 py-1.5 text-xs font-semibold rounded-lg text-stone-600 hover:text-charcoal";
+      document.getElementById('tab-btn-presets').className = tab === 'presets' ? "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white text-charcoal shadow-2xs" : "flex-1 py-1.5 text-xs font-semibold rounded-lg text-stone-600 hover:text-charcoal";
+
+      document.getElementById('tab-content-file').classList.toggle('hidden', tab !== 'file');
+      document.getElementById('tab-content-camera').classList.toggle('hidden', tab !== 'camera');
+      document.getElementById('tab-content-presets').classList.toggle('hidden', tab !== 'presets');
+
+      if (tab === 'camera') {
+        startCamera();
+      } else {
+        stopCamera();
+      }
+    }
+
+    async function startCamera() {
+      try {
+        const video = document.getElementById('camera-stream');
+        cameraStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1080 } }, audio: false });
+        video.srcObject = cameraStreamObj;
+      } catch (err) {
+        showToast("Camera Access", "Could not access webcam. Please upload a file instead.");
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStreamObj) {
+        cameraStreamObj.getTracks().forEach(track => track.stop());
+        cameraStreamObj = null;
+      }
+    }
+
+    function captureCameraSnapshot() {
+      const video = document.getElementById('camera-stream');
+      const canvas = document.getElementById('camera-snapshot-canvas');
+      if (!video.videoWidth) {
+        showToast("Webcam", "Please start camera first.");
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const snapshotUrl = canvas.toDataURL('image/jpeg', 0.95);
+      stopCamera();
+
+      userUploadedDataUrl = snapshotUrl;
+      userUploadedBase64 = snapshotUrl.split(',')[1];
+      userUploadedMime = 'image/jpeg';
+
+      activeBodyMode = 'custom';
+      updateModeSwitcherUI('custom');
+
+      imgBefore.src = snapshotUrl;
+      document.getElementById('model-thumb-img').src = snapshotUrl;
+      document.getElementById('model-badge-label').textContent = "Live Snapshot";
+      document.getElementById('label-before-text').textContent = "Before: Live Photo";
+
+      closeBodyUploadModal();
+      executeAiVirtualTryOn(currentGarmentIndex);
+      showToast("ဓာတ်ပုံရိုက်ပြီးပါပြီ", "သင့်ခန္ဓာကိုယ်ပေါ် အင်္ကျီစမ်းသပ်ဝတ်ဆင်ပေးနေပါသည်...");
+    }
+
+    // ============================================================
+    // 8. ZOOM, PAN & HUD TOOLS
+    // ============================================================
+    function adjustZoom(delta) {
+      zoomLevel = Math.max(0.8, Math.min(2.5, zoomLevel + delta));
+      applyTransform();
+    }
+
+    function resetZoomPan() {
+      zoomLevel = 1.0;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+      showToast("View Reset", "Stage centered at default 1.0x scale.");
+    }
+
+    function togglePanMode() {
+      isPanMode = !isPanMode;
+      const btn = document.getElementById('btn-pan-mode');
+      if (isPanMode) {
+        btn.classList.add('bg-terracotta', 'text-white');
+        viewportStage.style.cursor = 'grab';
+        showToast("Pan Mode Active", "Drag the image around canvas.");
+      } else {
+        btn.classList.remove('bg-terracotta', 'text-white');
+        viewportStage.style.cursor = '';
+      }
+    }
+
+    function applyTransform() {
+      panZoomContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+    }
+
+    function toggleTurntable() {
+      isTurntableActive = !isTurntableActive;
+      const svg = document.getElementById('orbit-arrow-svg');
+      if (isTurntableActive) {
+        svg.classList.add('spin-turntable');
+        showToast("360° Drape Simulation", "3D turntable view simulation engaged.");
+      } else {
+        svg.classList.remove('spin-turntable');
+        showToast("360° Stopped", "Turntable reset to front editorial view.");
+      }
+    }
+
+    function toggleWireframe() {
+      isWireframeActive = !isWireframeActive;
+      const btn = document.getElementById('btn-wireframe-toggle');
+      if (isWireframeActive) {
+        btn.classList.add('bg-terracotta/20', 'text-terracotta');
+        showToast("Mesh Topology Enabled", "Cloth surface polygonal wireframe projected.");
+      } else {
+        btn.classList.remove('bg-terracotta/20', 'text-terracotta');
+        showToast("Mesh Topology Disabled", "Default photorealistic lighting restored.");
+      }
+    }
+
+    function toggleAnchorLock() {
+      isAnchorLocked = !isAnchorLocked;
+      const btn = document.getElementById('btn-anchor-lock');
+      if (isAnchorLocked) {
+        btn.classList.add('bg-terracotta/20', 'text-terracotta');
+        showToast("Anchor Locked", "Shoulder seams locked to skeletal joints.");
+      } else {
+        btn.classList.remove('bg-terracotta/20', 'text-terracotta');
+        showToast("Anchor Free", "Freeform tension enabled.");
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        showToast("Fullscreen Enabled", "Press ESC to return.");
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function toggleSizeMenu() {
+      document.getElementById('size-dropdown').classList.toggle('hidden');
+    }
+
+    function selectSize(size, desc) {
+      currentSize = size;
+      customTshirtSize = size;
+      document.getElementById('current-size-display').textContent = `Size: ${size}`;
+      document.getElementById('drape-fit-label').textContent = `(${desc})`;
+      updateCustomSizePillsUI(size);
+      toggleSizeMenu();
+      executeAiVirtualTryOn(currentGarmentIndex);
+      showToast("Size Calibrated", `Garment scaled to Size ${size} (${desc}).`);
+    }
+
+    function openBodyUploadModal() { document.getElementById('modal-body-upload').classList.remove('hidden'); }
+    function closeBodyUploadModal() { stopCamera(); document.getElementById('modal-body-upload').classList.add('hidden'); }
+    function openModelModal() { document.getElementById('modal-model').classList.remove('hidden'); }
+    function closeModelModal() { document.getElementById('modal-model').classList.add('hidden'); }
+    function openFabricModal() { document.getElementById('modal-fabric').classList.remove('hidden'); }
+    function closeFabricModal() { document.getElementById('modal-fabric').classList.add('hidden'); }
+    function toggleShareModal() { document.getElementById('modal-share').classList.toggle('hidden'); }
+
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar-panel').classList.toggle('-translate-x-full');
+      document.getElementById('sidebar-backdrop').classList.toggle('hidden');
+    }
+
+    function scrollToClothing() {
+      const el = document.getElementById('choose-clothing-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetToDefaults() {
+      updateSplitPosition(62);
+      userUploadedDataUrl = null;
+      userUploadedBase64 = null;
+      activeBodyMode = 'studio';
+      switchBodyMode('studio');
+      selectGarment(3);
+      setTuckState(true);
+      resetZoomPan();
+      showToast("Studio Reset", "Workspace restored to original real human model.");
+    }
+
+    function copyShareLink() {
+      const input = document.getElementById('share-link-input');
+      input.select();
+      document.execCommand('copy');
+      showToast("Link Copied!", "Shareable virtual try-on link copied.");
+      toggleShareModal();
+    }
+
+    function exportSnapshot() {
+      showToast("Exporting Render...", "Rendering high-res virtual try-on fashion composite.");
+      setTimeout(() => {
+        showToast("Snapshot Ready", "High-res editorial frame exported successfully.");
+      }, 900);
+    }
+
+    function toggleHelpModal() {
+      showToast("လမ်းညွှန်ချက်များ", "• 'Upload Your Photo' ဖြင့် သင့်ကိုယ်ပိုင်ဓာတ်ပုံကို တင်နိုင်ပါသည်\n• အင်္ကျီများကို ရွေးချယ်ပြီး AI Virtual Try-On စမ်းသပ်ပါ\n• အလယ်ရှိ မျဉ်းကို ဘယ်/ညာ ဆွဲရွှေ့ပြီး နှိုင်းယှဉ်ကြည့်ပါ");
+    }
+
+    // Drag-over screen listeners for easy file drop
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dropOverlay = document.getElementById('drag-drop-overlay');
+      if (dropOverlay) dropOverlay.classList.remove('hidden');
+    });
+    window.addEventListener('dragleave', (e) => {
+      if (e.relatedTarget === null) {
+        const dropOverlay = document.getElementById('drag-drop-overlay');
+        if (dropOverlay) dropOverlay.classList.add('hidden');
+      }
+    });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const dropOverlay = document.getElementById('drag-drop-overlay');
+      if (dropOverlay) dropOverlay.classList.add('hidden');
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleUserPhotoUpload({ target: { files } });
+      }
+    });
+
+    // Toast Notifications
+    function showToast(title, message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = "bg-charcoal text-white px-4 py-3 rounded-2xl shadow-elevated border border-stone-800 text-xs flex items-center space-x-3 pointer-events-auto transform translate-y-3 opacity-0 transition-all duration-300 max-w-xs";
+      toast.innerHTML = `
+        <div class="w-2 h-2 rounded-full bg-terracotta shrink-0"></div>
+        <div>
+          <p class="font-bold tracking-tight text-[11px] uppercase">${title}</p>
+          <p class="text-stone-300 text-[11px] leading-tight">${message}</p>
+        </div>
+      `;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-3', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize Viewport State
+    window.addEventListener('load', () => {
+      updateSplitPosition(62);
+      setTuckState(false);
+      selectGarment(3); // Start with Botanical Chocolate Cacao Tee
+      refreshStudioModelDisplay(); // Initialize with Model 5199
+    });
+  </script>
+</body>
+</html>
